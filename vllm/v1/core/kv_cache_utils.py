@@ -824,6 +824,7 @@ def get_num_blocks(
         available_memory: Memory available for KV cache in bytes.
         page_size: The page size of the KV cache.
     """
+    num_layers = int(os.environ.get('NUM_REUSE_LAYERS'))
     num_blocks = int(available_memory // page_size // num_layers)
     num_blocks = max(num_blocks, 0)
     num_blocks = may_override_num_blocks(vllm_config, num_blocks)
@@ -1338,7 +1339,7 @@ def get_kv_cache_configs(
         kv_cache_specs, available_memory
     ):
         check_enough_kv_cache_memory(
-            vllm_config, kv_cache_spec_one_worker, available_memory_one_worker
+            vllm_config, kv_cache_spec_one_worker, available_memory_one_worker // int(os.environ.get('NUM_REUSE_LAYERS')) * int(os.environ.get('NUM_LAYERS'))
         )
 
     # Merge the KV cache specs of all workers. Different PP stages may have
